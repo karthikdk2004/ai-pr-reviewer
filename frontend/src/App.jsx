@@ -4,6 +4,11 @@ import Navbar from './components/Navbar'
 import PRInput from './components/PRInput'
 import ReviewDashboard from './components/ReviewDashboard'
 import ReviewHistory from './components/ReviewHistory'
+import {
+  GitBranch, Zap, Shield, Code, Gauge, Sparkles,
+  Server, Globe, Cpu, ArrowRight, CheckCircle, AlertTriangle,
+  ExternalLink, Github, Layers,
+} from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -134,6 +139,244 @@ const MOCK_REVIEW_2 = {
   created_at: new Date(Date.now() - 86400000).toISOString(),
 }
 
+// ── Architecture nodes for settings page ─────────────────────────────────────
+const PIPELINE_ARCHITECTURE = [
+  { label: 'Fetch PR', icon: GitBranch, desc: 'GitHub API → PR title, diff, files', color: 'text-blue-400', bgColor: 'bg-blue-500/8' },
+  { label: 'Security Scan', icon: Shield, desc: 'Groq LLM → security vulnerabilities', color: 'text-red-400', bgColor: 'bg-red-500/8' },
+  { label: 'Code Quality', icon: Code, desc: 'Groq LLM → code quality issues', color: 'text-amber-400', bgColor: 'bg-amber-500/8' },
+  { label: 'Performance', icon: Gauge, desc: 'Groq LLM → performance issues', color: 'text-orange-400', bgColor: 'bg-orange-500/8' },
+  { label: 'Summary', icon: Zap, desc: 'Groq LLM → verdict + score + summary', color: 'text-accent', bgColor: 'bg-accent/8' },
+]
+
+const TECH_STACK = [
+  { label: 'LangGraph', desc: 'AI Orchestration' },
+  { label: 'Groq', desc: 'LLM Inference' },
+  { label: 'llama-3.3-70b', desc: 'Language Model' },
+  { label: 'FastAPI', desc: 'Backend Framework' },
+  { label: 'React 18', desc: 'Frontend' },
+  { label: 'Vite', desc: 'Build Tool' },
+  { label: 'Tailwind CSS', desc: 'Styling' },
+  { label: 'httpx', desc: 'Async HTTP' },
+]
+
+// ── Settings Page Component ──────────────────────────────────────────────────
+function SettingsPage() {
+  const [healthStatus, setHealthStatus] = useState(null)
+  const [healthLoading, setHealthLoading] = useState(true)
+
+  useEffect(() => {
+    setHealthLoading(true)
+    fetch(`${API_URL}/health`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        setHealthStatus(data)
+        setHealthLoading(false)
+      })
+      .catch(() => {
+        setHealthStatus(null)
+        setHealthLoading(false)
+      })
+  }, [])
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-8 pb-12 animate-fade-in">
+      {/* Header */}
+      <div>
+        <h2 className="text-white font-bold text-2xl mb-1">Settings & Architecture</h2>
+        <p className="text-zinc-500 text-sm">System configuration, pipeline architecture, and tech stack</p>
+      </div>
+
+      {/* System Status */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+            <Server size={14} className="text-emerald-400" />
+          </div>
+          <h3 className="text-white font-semibold">System Status</h3>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-bg-elevated rounded-lg p-3 border border-bg-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              {healthLoading ? (
+                <span className="w-2 h-2 rounded-full bg-zinc-500 animate-pulse" />
+              ) : healthStatus ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 status-pulse" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              )}
+              <span className="text-xs font-medium text-zinc-400">Backend</span>
+            </div>
+            <p className="text-sm font-semibold text-white">
+              {healthLoading ? 'Checking...' : healthStatus ? 'Connected' : 'Demo Mode'}
+            </p>
+          </div>
+          <div className="bg-bg-elevated rounded-lg p-3 border border-bg-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              {healthStatus?.groq_configured ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-zinc-500" />
+              )}
+              <span className="text-xs font-medium text-zinc-400">Groq API</span>
+            </div>
+            <p className="text-sm font-semibold text-white">
+              {healthStatus?.groq_configured ? 'Configured' : 'Not Set'}
+            </p>
+          </div>
+          <div className="bg-bg-elevated rounded-lg p-3 border border-bg-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              {healthStatus?.github_token ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+              )}
+              <span className="text-xs font-medium text-zinc-400">GitHub Token</span>
+            </div>
+            <p className="text-sm font-semibold text-white">
+              {healthStatus?.github_token ? 'Configured' : 'Optional'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Configuration */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
+            <Cpu size={14} className="text-accent" />
+          </div>
+          <h3 className="text-white font-semibold">Configuration</h3>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">
+              Backend API URL
+            </label>
+            <input
+              readOnly
+              value={API_URL}
+              className="input-field opacity-60 cursor-default text-xs"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">
+              Model
+            </label>
+            <input
+              readOnly
+              value="llama-3.3-70b-versatile (Groq)"
+              className="input-field opacity-60 cursor-default text-xs"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Pipeline Architecture */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center">
+            <Layers size={14} className="text-accent" />
+          </div>
+          <h3 className="text-white font-semibold">LangGraph Pipeline Architecture</h3>
+          <span className="ml-auto text-xs text-zinc-500 bg-bg-elevated px-2.5 py-0.5 rounded-full border border-bg-border font-mono">
+            5 nodes
+          </span>
+        </div>
+        <div className="space-y-0">
+          {PIPELINE_ARCHITECTURE.map((node, idx) => {
+            const Icon = node.icon
+            return (
+              <div key={node.label}>
+                <div className="flex items-center gap-3 py-3 group animate-stagger-in" style={{ animationDelay: `${idx * 80}ms` }}>
+                  <div className={`w-9 h-9 rounded-lg ${node.bgColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
+                    <Icon size={16} className={node.color} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold">{node.label}</p>
+                    <p className="text-zinc-500 text-xs">{node.desc}</p>
+                  </div>
+                  <span className="text-xs text-zinc-600 font-mono bg-bg-elevated px-2 py-0.5 rounded">
+                    node {idx + 1}
+                  </span>
+                </div>
+                {idx < PIPELINE_ARCHITECTURE.length - 1 && (
+                  <div className="flex items-center ml-4 py-0.5">
+                    <div className="w-px h-4 bg-bg-border ml-[14px]" />
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tech Stack */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center">
+            <Sparkles size={14} className="text-purple-400" />
+          </div>
+          <h3 className="text-white font-semibold">Tech Stack</h3>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {TECH_STACK.map((tech, idx) => (
+            <div
+              key={tech.label}
+              className="tech-badge animate-stagger-in"
+              style={{ animationDelay: `${idx * 50}ms` }}
+            >
+              {tech.label}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Links */}
+      <div className="card p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg bg-zinc-500/10 flex items-center justify-center">
+            <Globe size={14} className="text-zinc-400" />
+          </div>
+          <h3 className="text-white font-semibold">Links</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <a
+            href="https://github.com/karthikdk2004/ai-pr-reviewer"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 bg-bg-elevated rounded-lg p-3 border border-bg-border hover:border-accent/20 transition-all group"
+          >
+            <Github size={16} className="text-zinc-400 group-hover:text-white transition-colors" />
+            <div>
+              <p className="text-sm font-medium text-white">Source Code</p>
+              <p className="text-xs text-zinc-500">GitHub Repository</p>
+            </div>
+            <ExternalLink size={12} className="ml-auto text-zinc-600 group-hover:text-accent transition-colors" />
+          </a>
+          <a
+            href="https://ai-pr-reviewer-eta.vercel.app"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 bg-bg-elevated rounded-lg p-3 border border-bg-border hover:border-accent/20 transition-all group"
+          >
+            <Globe size={16} className="text-zinc-400 group-hover:text-white transition-colors" />
+            <div>
+              <p className="text-sm font-medium text-white">Live Demo</p>
+              <p className="text-xs text-zinc-500">Vercel Deployment</p>
+            </div>
+            <ExternalLink size={12} className="ml-auto text-zinc-600 group-hover:text-accent transition-colors" />
+          </a>
+        </div>
+      </div>
+
+      {/* Version */}
+      <div className="text-center text-xs text-zinc-600 pt-2">
+        <p>PR Reviewer v1.0.0 · Built with LangGraph + Groq</p>
+      </div>
+    </div>
+  )
+}
+
 // ── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState('input')
@@ -260,36 +503,7 @@ export default function App() {
             />
           )}
 
-          {view === 'settings' && (
-            <div className="max-w-xl mx-auto animate-fade-in">
-              <h2 className="text-white font-bold text-xl mb-6">Settings</h2>
-              <div className="card p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Backend API URL
-                  </label>
-                  <input
-                    readOnly
-                    value={API_URL}
-                    className="input-field opacity-60 cursor-default"
-                  />
-                  <p className="text-xs text-zinc-500 mt-1.5">
-                    Set <code className="font-mono text-accent">VITE_API_URL</code> in your .env file to change.
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Model
-                  </label>
-                  <input
-                    readOnly
-                    value="llama-3.3-70b-versatile (Groq)"
-                    className="input-field opacity-60 cursor-default"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          {view === 'settings' && <SettingsPage />}
         </main>
       </div>
     </div>
