@@ -1,272 +1,147 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    background-color: #0a0a0c;
-    color: #ffffff;
-    font-family: 'Inter', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #0a0a0c;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #2e2e38;
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #6366f1;
-  }
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+  --bg-base: #0c0c10;
+  --bg-surface: #141418;
+  --bg-elevated: #1c1c22;
+  --bg-hover: #22222a;
+  --border: #27272f;
+  --border-hover: #363640;
+  --text-primary: #ededef;
+  --text-secondary: #8b8b93;
+  --text-tertiary: #5c5c66;
+  --accent: #717cf5;
+  --accent-hover: #818bf7;
+  --accent-muted: rgba(113, 124, 245, 0.12);
 }
 
-@layer components {
-  /* ── Cards ─────────────────────────────────────────────────── */
-  .card {
-    @apply bg-bg-card/80 border border-bg-border rounded-xl;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .card:hover {
-    border-color: rgba(99, 102, 241, 0.15);
-    box-shadow: 0 4px 24px -4px rgba(99, 102, 241, 0.06);
-  }
-
-  .card-elevated {
-    @apply bg-bg-elevated/80 border border-bg-border rounded-xl;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .card-elevated:hover {
-    transform: translateY(-2px);
-    border-color: rgba(99, 102, 241, 0.2);
-    box-shadow: 0 8px 32px -8px rgba(99, 102, 241, 0.1);
-  }
-
-  /* ── Glass effect ──────────────────────────────────────────── */
-  .glass {
-    background: rgba(17, 17, 19, 0.6);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
-  .glass-strong {
-    background: rgba(17, 17, 19, 0.85);
-    backdrop-filter: blur(24px) saturate(200%);
-    -webkit-backdrop-filter: blur(24px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  /* ── Buttons ───────────────────────────────────────────────── */
-  .btn-primary {
-    @apply bg-accent hover:bg-accent-hover text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent
-    );
-    transition: left 0.5s ease;
-  }
-
-  .btn-primary:hover::after {
-    left: 100%;
-  }
-
-  .btn-primary:hover {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-  }
-
-  .btn-secondary {
-    @apply bg-bg-elevated hover:bg-bg-border text-white font-medium px-5 py-2.5 rounded-lg border border-bg-border transition-all duration-200 flex items-center gap-2;
-  }
-
-  .btn-secondary:hover {
-    border-color: rgba(99, 102, 241, 0.3);
-    box-shadow: 0 0 12px rgba(99, 102, 241, 0.08);
-  }
-
-  /* ── Input ─────────────────────────────────────────────────── */
-  .input-field {
-    @apply w-full bg-bg-elevated border border-bg-border rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all duration-200 font-mono text-sm;
-  }
-
-  .input-field:focus {
-    box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
-  }
-
-  /* ── Severity ──────────────────────────────────────────────── */
-  .severity-badge {
-    @apply text-xs font-bold uppercase px-2 py-0.5 rounded-md;
-    letter-spacing: 0.05em;
-  }
-
-  .severity-critical {
-    @apply bg-red-500/15 text-red-400 border border-red-500/30;
-  }
-
-  .severity-high {
-    @apply bg-orange-500/15 text-orange-400 border border-orange-500/30;
-  }
-
-  .severity-medium {
-    @apply bg-yellow-500/15 text-yellow-400 border border-yellow-500/30;
-  }
-
-  .severity-low {
-    @apply bg-blue-500/15 text-blue-400 border border-blue-500/30;
-  }
-
-  /* ── Hero gradient mesh background ─────────────────────────── */
-  .hero-mesh {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-mesh::before {
-    content: '';
-    position: absolute;
-    inset: -50%;
-    width: 200%;
-    height: 200%;
-    background:
-      radial-gradient(ellipse 600px 400px at 20% 30%, rgba(99, 102, 241, 0.12), transparent),
-      radial-gradient(ellipse 500px 350px at 75% 60%, rgba(139, 92, 246, 0.08), transparent),
-      radial-gradient(ellipse 400px 300px at 50% 80%, rgba(59, 130, 246, 0.06), transparent);
-    animation: gradient-shift 8s ease infinite;
-    background-size: 200% 200%;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .hero-mesh > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ── Floating particles ────────────────────────────────────── */
-  .particle {
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-    opacity: 0.3;
-  }
-
-  /* ── Pipeline beam ─────────────────────────────────────────── */
-  .pipeline-beam {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(99, 102, 241, 0.6) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: beam-travel 1.8s ease-in-out infinite;
-  }
-
-  .pipeline-beam-done {
-    background: linear-gradient(
-      90deg,
-      rgba(99, 102, 241, 0.3),
-      rgba(99, 102, 241, 0.3)
-    );
-  }
-
-  /* ── Score ring glow ───────────────────────────────────────── */
-  .score-glow {
-    filter: drop-shadow(0 0 8px var(--score-color, #6366f1));
-  }
-
-  /* ── Tech badge ────────────────────────────────────────────── */
-  .tech-badge {
-    @apply text-xs font-medium px-3 py-1.5 rounded-full border;
-    background: rgba(99, 102, 241, 0.06);
-    border-color: rgba(99, 102, 241, 0.15);
-    color: rgba(199, 210, 254, 0.8);
-    transition: all 0.2s ease;
-  }
-
-  .tech-badge:hover {
-    background: rgba(99, 102, 241, 0.12);
-    border-color: rgba(99, 102, 241, 0.3);
-    color: #c7d2fe;
-    transform: translateY(-1px);
-  }
-
-  /* ── Shimmer badge ─────────────────────────────────────────── */
-  .shimmer-badge {
-    background-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.06) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 2s ease-in-out infinite;
-  }
-
-  /* ── Animated gradient text ────────────────────────────────── */
-  .gradient-text {
-    background: linear-gradient(135deg, #fff 0%, #c7d2fe 50%, #818cf8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* ── Status dot pulse ──────────────────────────────────────── */
-  .status-pulse {
-    position: relative;
-  }
-
-  .status-pulse::after {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0;
-    animation: ripple 2s ease-out infinite;
-  }
+/* ── Base ───────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* ── Animation delay utilities ───────────────────────────────── */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-.delay-600 { animation-delay: 600ms; }
-.delay-700 { animation-delay: 700ms; }
-.delay-800 { animation-delay: 800ms; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.15s ease;
+}
+.card:hover {
+  border-color: var(--border-hover);
+}
+
+/* ── Inputs ─────────────────────────────────────────────────── */
+.input-field {
+  width: 100%;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: border-color 0.15s ease;
+  outline: none;
+  font-family: inherit;
+}
+.input-field::placeholder { color: var(--text-tertiary); }
+.input-field:focus { border-color: var(--accent); }
+.input-field:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  font-family: inherit;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.btn-secondary:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+/* ── Severity Badges ────────────────────────────────────────── */
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.severity-critical { background: #dc26261a; color: #f87171; }
+.severity-high { background: #ea580c1a; color: #fb923c; }
+.severity-medium { background: #ca8a041a; color: #fbbf24; }
+.severity-low { background: #3b82f61a; color: #60a5fa; }
+
+/* ── Tech badges ────────────────────────────────────────────── */
+.tech-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+/* ── Pipeline beam (only functional animation kept) ─────────── */
+.pipeline-beam-done {
+  background: var(--accent);
+  opacity: 0.4;
+}
