@@ -3,6 +3,7 @@ import {
   GitMerge, User, GitBranch, FileCode2, Plus, Clock,
   Shield, Code, Gauge, CheckCircle, Copy, Check, ExternalLink, Zap,
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import IssueCard from './IssueCard'
 import SummaryPanel from './SummaryPanel'
 
@@ -36,7 +37,6 @@ function AnimatedCounter({ value, decimals = 0, duration = 800 }) {
     const animate = (now) => {
       const elapsed = now - startTime.current
       const progress = Math.min(elapsed / duration, 1)
-      // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3)
       setDisplay(eased * target)
       if (progress < 1) {
@@ -59,42 +59,39 @@ function ScoreRing({ score }) {
   const color = score >= 8 ? '#22c55e' : score >= 5 ? '#f59e0b' : '#ef4444'
   const glowColor = score >= 8 ? 'rgba(34,197,94,0.15)' : score >= 5 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)'
 
-  const [animated, setAnimated] = useState(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 100)
-    return () => clearTimeout(t)
-  }, [])
-
   return (
-    <div className="relative flex items-center justify-center w-28 h-28">
+    <motion.div
+      className="relative flex items-center justify-center w-28 h-28"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.2 }}
+    >
       {/* Glow */}
-      <div
-        className="absolute inset-0 rounded-full animate-glow-pulse"
+      <motion.div
+        className="absolute inset-0 rounded-full"
         style={{ background: glowColor, filter: 'blur(16px)' }}
+        animate={{ opacity: [0.3, 0.7, 0.3] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
       />
       <svg width="112" height="112" className="-rotate-90 relative">
-        {/* Track */}
         <circle cx="56" cy="56" r={r} fill="none" stroke="#1e1e24" strokeWidth="7" />
-        {/* Fill */}
-        <circle
+        <motion.circle
           cx="56" cy="56" r={r} fill="none"
           stroke={color} strokeWidth="7"
-          strokeDasharray={animated ? `${dash} ${circ}` : `0 ${circ}`}
           strokeLinecap="round"
-          style={{
-            transition: 'stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            filter: `drop-shadow(0 0 6px ${color}60)`,
-          }}
+          initial={{ strokeDasharray: `0 ${circ}` }}
+          animate={{ strokeDasharray: `${dash} ${circ}` }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
+          style={{ filter: `drop-shadow(0 0 6px ${color}60)` }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-2xl font-bold text-white">
-          <AnimatedCounter value={score} decimals={1} duration={1200} />
+          <AnimatedCounter value={score} decimals={1} duration={1400} />
         </span>
         <span className="text-xs text-zinc-500 font-medium">/10</span>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -138,6 +135,18 @@ const sortBySeverity = (issues) =>
       (SEVERITY_ORDER[b.severity?.toLowerCase()] ?? 4)
   )
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08 },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+}
+
 export default function ReviewDashboard({ review, onNewReview }) {
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
@@ -165,9 +174,14 @@ export default function ReviewDashboard({ review, onNewReview }) {
   const totalIssues = (review.security_issues?.length || 0) + (review.quality_issues?.length || 0) + (review.performance_issues?.length || 0)
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12 animate-slide-up">
+    <motion.div
+      className="max-w-5xl mx-auto space-y-6 pb-12"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Top bar */}
-      <div className="flex items-center justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <a
             href={review.pr_url}
@@ -180,19 +194,38 @@ export default function ReviewDashboard({ review, onNewReview }) {
           </a>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button onClick={handleCopy} className="btn-secondary text-sm py-2 px-3">
-            {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-            {copied ? 'Copied!' : 'Copy Review'}
-          </button>
-          <button onClick={onNewReview} className="btn-primary text-sm py-2 px-3">
+          <motion.button
+            onClick={handleCopy}
+            className="btn-secondary text-sm py-2 px-3"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <AnimatePresence mode="wait">
+              {copied ? (
+                <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-1.5">
+                  <Check size={14} className="text-emerald-400" /> Copied!
+                </motion.span>
+              ) : (
+                <motion.span key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-1.5">
+                  <Copy size={14} /> Copy Review
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
+          <motion.button
+            onClick={onNewReview}
+            className="btn-primary text-sm py-2 px-3"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
             <Plus size={14} />
             New Review
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
+      <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
         {review.author_avatar && (
           <img
             src={review.author_avatar}
@@ -217,20 +250,27 @@ export default function ReviewDashboard({ review, onNewReview }) {
             Analyzed in {review.review_time_seconds}s
           </span>
         )}
-      </div>
+      </motion.div>
 
       {/* Verdict banner */}
-      <div className={`flex items-center gap-3 px-5 py-4 rounded-xl border ${verdict.className} transition-all duration-300`}>
-        <span className={`w-2.5 h-2.5 rounded-full ${verdict.dot} status-pulse`} />
+      <motion.div
+        variants={itemVariants}
+        className={`flex items-center gap-3 px-5 py-4 rounded-xl border ${verdict.className}`}
+      >
+        <motion.span
+          className={`w-2.5 h-2.5 rounded-full ${verdict.dot}`}
+          animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        />
         <span className="font-bold text-base">{verdict.label}</span>
         <span className="text-sm opacity-70 ml-1">— {review.repo}</span>
         <span className="ml-auto text-xs opacity-50 font-mono">
           {totalIssues} issue{totalIssues !== 1 ? 's' : ''} found
         </span>
-      </div>
+      </motion.div>
 
       {/* Score + metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="card p-5 flex flex-col items-center justify-center col-span-1">
           <ScoreRing score={review.overall_score || 0} />
           <p className="text-zinc-400 text-xs mt-3 font-semibold uppercase tracking-wider">Overall Score</p>
@@ -242,11 +282,14 @@ export default function ReviewDashboard({ review, onNewReview }) {
           { icon: Gauge, label: 'Performance', count: review.performance_issues?.length ?? 0, color: 'text-orange-400', bgColor: 'bg-orange-500/8', tab: 'performance' },
           { icon: CheckCircle, label: 'Positives', count: review.positive_aspects?.length ?? 0, color: 'text-emerald-400', bgColor: 'bg-emerald-500/8', tab: 'all' },
         ].map(({ icon: Icon, label, count, color, bgColor, tab }, idx) => (
-          <button
+          <motion.button
             key={label}
             onClick={() => setActiveTab(tab)}
-            className={`card p-4 text-left hover:border-accent/30 transition-all duration-300 ${activeTab === tab ? 'border-accent/30 bg-accent/5' : ''}`}
-            style={{ animationDelay: `${(idx + 1) * 100}ms` }}
+            className={`card p-4 text-left transition-all duration-300 ${activeTab === tab ? 'border-accent/30 bg-accent/5' : ''}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + idx * 0.1, duration: 0.4 }}
+            whileHover={{ y: -3, borderColor: 'rgba(99, 102, 241, 0.3)' }}
           >
             <div className={`w-8 h-8 ${bgColor} rounded-lg flex items-center justify-center mb-3`}>
               <Icon size={16} className={color} />
@@ -255,50 +298,74 @@ export default function ReviewDashboard({ review, onNewReview }) {
               <AnimatedCounter value={count} duration={800 + idx * 100} />
             </p>
             <p className="text-zinc-500 text-xs mt-1 font-medium">{label} {label !== 'Positives' ? 'Issues' : ''}</p>
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Issues tabs */}
-      <div>
+      <motion.div variants={itemVariants}>
         <div className="flex gap-1 mb-4 bg-bg-card/80 rounded-lg p-1 w-fit border border-bg-border backdrop-blur">
           {['all', 'security', 'quality', 'performance'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 capitalize ${
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 capitalize relative ${
                 activeTab === tab
-                  ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                  ? 'text-white'
                   : 'text-zinc-400 hover:text-white hover:bg-bg-elevated'
               }`}
             >
-              {tab}
+              {activeTab === tab && (
+                <motion.div
+                  className="absolute inset-0 bg-accent rounded-md shadow-lg shadow-accent/20"
+                  layoutId="activeTab"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{tab}</span>
             </button>
           ))}
         </div>
 
-        {filteredIssues.length === 0 ? (
-          <div className="card p-10 text-center text-zinc-500">
-            <CheckCircle size={36} className="mx-auto mb-3 text-emerald-400/30" />
-            <p className="text-sm font-medium">No issues found in this category.</p>
-            <p className="text-xs text-zinc-600 mt-1">The code looks clean here!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredIssues.map((issue, i) => (
-              <div key={i} style={{ animationDelay: `${i * 60}ms` }} className="animate-fade-in">
-                <IssueCard issue={issue} />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+          >
+            {filteredIssues.length === 0 ? (
+              <div className="card p-10 text-center text-zinc-500">
+                <CheckCircle size={36} className="mx-auto mb-3 text-emerald-400/30" />
+                <p className="text-sm font-medium">No issues found in this category.</p>
+                <p className="text-xs text-zinc-600 mt-1">The code looks clean here!</p>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredIssues.map((issue, i) => (
+                  <motion.div
+                    key={`${activeTab}-${i}`}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06, duration: 0.3 }}
+                  >
+                    <IssueCard issue={issue} />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
 
       {/* Summary */}
-      <SummaryPanel
-        summary={review.summary}
-        positiveAspects={review.positive_aspects || []}
-      />
-    </div>
+      <motion.div variants={itemVariants}>
+        <SummaryPanel
+          summary={review.summary}
+          positiveAspects={review.positive_aspects || []}
+        />
+      </motion.div>
+    </motion.div>
   )
 }

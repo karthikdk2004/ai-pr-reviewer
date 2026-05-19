@@ -1,25 +1,106 @@
-# AI GitHub PR Reviewer
+# 🔍 AI GitHub PR Reviewer
 
-A production-grade AI-powered GitHub PR reviewer built with LangGraph, Groq (llama-3.3-70b-versatile), FastAPI, and React.
+> An AI-powered code review tool that analyzes GitHub pull requests for **security vulnerabilities**, **code quality issues**, and **performance bottlenecks** using a multi-agent LangGraph pipeline.
 
-## Features
+<div align="center">
 
-- **5-node LangGraph pipeline**: fetch → security → quality → performance → summary
-- **Security analysis**: hardcoded secrets, SQL injection, XSS, CSRF, auth bypasses
-- **Code quality**: naming, complexity, duplication, SOLID violations
-- **Performance**: N+1 queries, inefficient algorithms, missing caching
-- **Verdict**: APPROVE / REQUEST\_CHANGES / COMMENT with a score /10
-- **Dark theme UI** with animated pipeline visualization
-- **Review history** with full CRUD
-- **Mock data fallback** — works without a running backend
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-ai--pr--reviewer-6366f1?style=for-the-badge)](https://ai-pr-reviewer-eta.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-Source_Code-181717?style=for-the-badge&logo=github)](https://github.com/karthikdk2004/ai-pr-reviewer)
 
-## Quick Start
+**[Live Demo](https://ai-pr-reviewer-eta.vercel.app/)** · **[Report Bug](https://github.com/karthikdk2004/ai-pr-reviewer/issues)** · **[Request Feature](https://github.com/karthikdk2004/ai-pr-reviewer/issues)**
+
+</div>
+
+---
+
+## ✨ Demo
+
+<div align="center">
+
+https://github.com/user-attachments/assets/demo.webp
+
+![PR Reviewer Demo](demo.webp)
+
+*Paste any public GitHub PR URL → Watch the AI pipeline analyze it in real-time → Get a comprehensive review*
+
+</div>
+
+---
+
+## 🏗️ Architecture
+
+The application uses a **5-node LangGraph state machine** where each node is a specialized AI agent:
+
+```mermaid
+graph LR
+    A[📥 Fetch PR] --> B[🛡️ Security Scan]
+    B --> C[📋 Code Quality]
+    C --> D[⚡ Performance]
+    D --> E[📊 Summary]
+    
+    style A fill:#3b82f6,color:#fff,stroke:#1e40af
+    style B fill:#ef4444,color:#fff,stroke:#991b1b
+    style C fill:#f59e0b,color:#fff,stroke:#92400e
+    style D fill:#f97316,color:#fff,stroke:#9a3412
+    style E fill:#6366f1,color:#fff,stroke:#4338ca
+```
+
+| Node | Agent Role | What It Does |
+|------|-----------|--------------|
+| **Fetch PR** | Data Collector | Calls GitHub API → extracts title, diff, file list, metadata |
+| **Security Scan** | Security Analyst | Groq LLM → finds hardcoded secrets, SQL injection, XSS, CSRF, auth bypasses |
+| **Code Quality** | Code Reviewer | Groq LLM → detects naming issues, high complexity, SOLID violations, duplication |
+| **Performance** | Performance Engineer | Groq LLM → identifies N+1 queries, inefficient algorithms, missing caching |
+| **Summary** | Decision Maker | Groq LLM → generates verdict (APPROVE / REQUEST_CHANGES / COMMENT), score /10, summary |
+
+---
+
+## 🚀 Features
+
+- **🤖 Multi-Agent AI Pipeline** — 5 specialized LangGraph nodes, not a single monolithic prompt
+- **🛡️ Security Analysis** — Detects hardcoded secrets, injection attacks, authentication bypasses
+- **📋 Code Quality** — Identifies naming inconsistencies, cyclomatic complexity, SOLID violations
+- **⚡ Performance** — Finds N+1 queries, inefficient algorithms, missing memoization
+- **📊 Scoring System** — Overall quality score out of 10 with color-coded severity badges
+- **🎯 Actionable Suggestions** — Every issue includes a concrete fix recommendation
+- **🌙 Premium Dark UI** — Glassmorphism, Framer Motion animations, animated score rings
+- **⏳ Real-time Pipeline Visualization** — Watch each agent node process in sequence
+- **📜 Review History** — Full CRUD with persistent storage
+- **🔄 Graceful Degradation** — Works without backend using built-in demo data
+- **📋 Copy to Clipboard** — Export review as formatted markdown
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **AI Orchestration** | LangGraph | Multi-agent pipeline as a directed acyclic graph |
+| **LLM** | Groq · llama-3.3-70b | Ultra-fast inference (~8s per full review) |
+| **Backend** | FastAPI + Python | Async API with structured JSON extraction |
+| **Frontend** | React 18 + Vite | Component-based SPA |
+| **Animations** | Framer Motion | Spring physics, layout animations, AnimatePresence |
+| **Styling** | Tailwind CSS | Utility-first with custom glassmorphism system |
+| **Icons** | Lucide React | Consistent iconography |
+| **HTTP** | httpx (async) | Non-blocking GitHub API calls |
+| **Deployment** | Vercel + Render | Frontend CDN + Backend container |
+
+---
+
+## ⚡ Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- [Groq API Key](https://console.groq.com) (free tier available)
 
 ### Backend
 
 ```bash
 cd backend
 python -m venv .venv
+
 # Windows
 .venv\Scripts\activate
 # macOS/Linux
@@ -28,7 +109,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env
-# Edit .env with your keys
+# Add your GROQ_API_KEY to .env
 
 uvicorn app.api.main:app --reload --port 8000
 ```
@@ -45,24 +126,28 @@ cp .env.example .env
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) 🚀
 
-## Environment Variables
+---
+
+## 🔑 Environment Variables
 
 ### Backend (`backend/.env`)
 
 | Variable | Required | Description |
-|---|---|---|
-| `GROQ_API_KEY` | Yes | Get from [console.groq.com](https://console.groq.com) |
-| `GITHUB_TOKEN` | No | Increases GitHub API rate limit from 60 to 5000 req/hr |
+|----------|----------|-------------|
+| `GROQ_API_KEY` | ✅ Yes | Get from [console.groq.com](https://console.groq.com) |
+| `GITHUB_TOKEN` | ❌ Optional | Increases GitHub API rate limit from 60 → 5000 req/hr |
 
 ### Frontend (`frontend/.env`)
 
 | Variable | Default | Description |
-|---|---|---|
+|----------|---------|-------------|
 | `VITE_API_URL` | `http://localhost:8000` | Backend API base URL |
 
-## Deployment
+---
+
+## 🌐 Deployment
 
 ### Backend → Render
 
@@ -74,52 +159,55 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Frontend → Vercel
 
-```bash
-cd frontend
-npm i -g vercel
-vercel --prod
-# Set VITE_API_URL to your Render backend URL
+1. Import repo on [vercel.com](https://vercel.com)
+2. Set **Root Directory** to `frontend`
+3. Set **VITE_API_URL** to your Render backend URL
+4. Deploy 🚀
+
+---
+
+## 📁 Project Structure
+
+```
+pr-reviewer/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── main.py              # FastAPI routes & CORS
+│   │   ├── agents/
+│   │   │   ├── graph.py             # LangGraph state machine
+│   │   │   ├── nodes.py             # 5 agent node implementations
+│   │   │   └── prompts.py           # Structured LLM prompts
+│   │   └── models/
+│   │       └── schemas.py           # Pydantic models
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                  # Main app + Settings page
+│   │   ├── components/
+│   │   │   ├── PRInput.jsx          # Hero + pipeline loader
+│   │   │   ├── ReviewDashboard.jsx  # Score ring + metrics
+│   │   │   ├── IssueCard.jsx        # Expandable issue cards
+│   │   │   ├── SummaryPanel.jsx     # Review summary
+│   │   │   ├── ReviewHistory.jsx    # History table
+│   │   │   ├── Navbar.jsx           # Top navigation
+│   │   │   └── Sidebar.jsx          # Side navigation
+│   │   └── index.css                # Custom CSS + glassmorphism
+│   ├── tailwind.config.js
+│   └── package.json
+└── README.md
 ```
 
-## Architecture
+---
 
-```
-PR URL
-  │
-  ▼
-┌─────────────┐
-│  fetch_node │  GitHub API → PR title, diff, files
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────┐
-│  security_node  │  Groq LLM → security vulnerabilities
-└────────┬────────┘
-         │
-         ▼
-┌───────────────┐
-│  quality_node │  Groq LLM → code quality issues
-└───────┬───────┘
-        │
-        ▼
-┌──────────────────────┐
-│  performance_node    │  Groq LLM → performance issues
-└──────────┬───────────┘
-           │
-           ▼
-┌───────────────┐
-│  summary_node │  Groq LLM → verdict + score + summary
-└───────────────┘
-```
+## 👨‍💻 Author
 
-## Tech Stack
+**Karthik DK** — [@karthikdk2004](https://github.com/karthikdk2004)
 
-| Layer | Tech |
-|---|---|
-| AI Orchestration | LangGraph |
-| LLM | Groq · llama-3.3-70b-versatile |
-| Backend | FastAPI + Python |
-| Frontend | React 18 + Vite |
-| Styling | Tailwind CSS |
-| Icons | Lucide React |
-| GitHub API | httpx (async) |
+---
+
+<div align="center">
+
+Built with ❤️ using **LangGraph** + **Groq** + **React** + **Framer Motion**
+
+</div>
