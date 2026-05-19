@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Sidebar from './components/Sidebar'
 import Navbar from './components/Navbar'
 import PRInput from './components/PRInput'
@@ -6,7 +7,7 @@ import ReviewDashboard from './components/ReviewDashboard'
 import ReviewHistory from './components/ReviewHistory'
 import {
   GitBranch, Shield, Code, Gauge, Zap,
-  Server, ExternalLink, Github,
+  Server, ExternalLink, Github, CheckCircle,
 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -142,82 +143,134 @@ function SettingsPage() {
       .catch(() => setHealth(null))
   }, [])
 
+  const STATUS = [
+    { label: 'Backend API', ok: !!health, desc: health ? 'Healthy' : 'Unreachable' },
+    { label: 'Groq API Key', ok: health?.groq_configured, desc: health?.groq_configured ? 'Configured' : 'Missing' },
+    { label: 'GitHub Token', ok: health?.github_token, desc: health?.github_token ? 'Set' : 'Optional' },
+  ]
+
+  const TECH = ['LangGraph', 'Groq', 'llama-3.3-70b', 'FastAPI', 'React 18', 'Framer Motion', 'Vite', 'Tailwind CSS']
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-12">
+    <motion.div
+      className="max-w-2xl mx-auto space-y-5 pb-12"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+    >
       <h2 className="text-text-primary font-semibold text-lg">Settings</h2>
 
       {/* Status */}
-      <div className="card p-4">
-        <h3 className="text-text-primary text-sm font-medium mb-3">Status</h3>
-        <div className="grid grid-cols-3 gap-3 text-sm">
-          {[
-            { label: 'Backend', ok: !!health },
-            { label: 'Groq API', ok: health?.groq_configured },
-            { label: 'GitHub Token', ok: health?.github_token },
-          ].map(({ label, ok }) => (
-            <div key={label} className="flex items-center gap-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-emerald-400' : 'bg-text-tertiary'}`} />
-              <span className="text-text-secondary text-xs">{label}</span>
-              <span className={`text-xs ml-auto ${ok ? 'text-emerald-400' : 'text-text-tertiary'}`}>
-                {ok ? 'Connected' : 'Not set'}
+      <div className="card p-5">
+        <h3 className="text-text-primary text-[13px] font-semibold mb-4">System Status</h3>
+        <div className="space-y-3">
+          {STATUS.map(({ label, ok, desc }) => (
+            <div key={label} className="flex items-center gap-3">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${ok ? 'bg-emerald-400 status-dot-active' : 'bg-text-tertiary'}`} />
+              <span className="text-text-primary text-sm flex-1">{label}</span>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${
+                ok ? 'text-emerald-400 bg-emerald-500/10' : 'text-text-tertiary bg-bg-elevated'
+              }`}>
+                {desc}
               </span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Config */}
-      <div className="card p-4">
-        <h3 className="text-text-primary text-sm font-medium mb-3">Configuration</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-text-secondary">API URL</span>
-            <span className="text-text-tertiary font-mono text-xs">{API_URL}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Model</span>
-            <span className="text-text-tertiary font-mono text-xs">llama-3.3-70b-versatile</span>
-          </div>
+      {/* Configuration */}
+      <div className="card p-5">
+        <h3 className="text-text-primary text-[13px] font-semibold mb-4">Configuration</h3>
+        <div className="space-y-3 text-sm">
+          {[
+            { label: 'API Endpoint', value: API_URL },
+            { label: 'LLM Model', value: 'llama-3.3-70b-versatile' },
+            { label: 'Provider', value: 'Groq (ultra-fast inference)' },
+            { label: 'Orchestrator', value: 'LangGraph state machine' },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex items-center justify-between py-1">
+              <span className="text-text-secondary">{label}</span>
+              <span className="text-text-tertiary font-mono text-xs bg-bg-elevated px-2 py-0.5 rounded">{value}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Pipeline */}
-      <div className="card p-4">
-        <h3 className="text-text-primary text-sm font-medium mb-3">Pipeline</h3>
+      {/* Pipeline Architecture */}
+      <div className="card p-5">
+        <h3 className="text-text-primary text-[13px] font-semibold mb-4">Pipeline Architecture</h3>
         <div className="space-y-0">
           {PIPELINE.map((node, i) => {
             const Icon = node.icon
             return (
-              <div key={node.label}>
-                <div className="flex items-center gap-3 py-2">
-                  <Icon size={13} className="text-text-tertiary shrink-0" />
-                  <span className="text-text-primary text-sm font-mono">{node.label}</span>
-                  <span className="text-text-tertiary text-xs ml-auto">{node.desc}</span>
+              <motion.div
+                key={node.label}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.3 }}
+              >
+                <div className="flex items-center gap-3 py-2.5 group">
+                  <span className="text-[10px] text-text-tertiary font-mono w-3 shrink-0">{i + 1}</span>
+                  <div className="w-7 h-7 rounded-md bg-accent-soft border border-accent/10 flex items-center justify-center shrink-0">
+                    <Icon size={13} className="text-accent" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-text-primary text-[13px] font-mono">{node.label}</span>
+                    <span className="text-text-tertiary text-xs ml-3">{node.desc}</span>
+                  </div>
                 </div>
                 {i < PIPELINE.length - 1 && (
-                  <div className="ml-1.5 w-px h-3 bg-border" />
+                  <div className="ml-[22px] w-px h-2.5 bg-border-default" />
                 )}
-              </div>
+              </motion.div>
             )
           })}
         </div>
       </div>
 
-      {/* Links */}
-      <div className="card p-4">
-        <h3 className="text-text-primary text-sm font-medium mb-3">Links</h3>
-        <div className="space-y-2">
-          <a href="https://github.com/karthikdk2004/ai-pr-reviewer" target="_blank" rel="noreferrer"
-            className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors">
-            <Github size={13} /> Source Code <ExternalLink size={10} className="ml-auto text-text-tertiary" />
-          </a>
-          <a href="https://ai-pr-reviewer-eta.vercel.app" target="_blank" rel="noreferrer"
-            className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors">
-            <Server size={13} /> Live Demo <ExternalLink size={10} className="ml-auto text-text-tertiary" />
-          </a>
+      {/* Tech Stack */}
+      <div className="card p-5">
+        <h3 className="text-text-primary text-[13px] font-semibold mb-4">Tech Stack</h3>
+        <div className="flex flex-wrap gap-2">
+          {TECH.map((t, i) => (
+            <motion.span
+              key={t}
+              className="tech-badge cursor-default"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: i * 0.04 }}
+              whileHover={{ borderColor: 'rgba(99,102,241,0.2)' }}
+            >
+              {t}
+            </motion.span>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* Links */}
+      <div className="card p-5">
+        <h3 className="text-text-primary text-[13px] font-semibold mb-4">Links</h3>
+        <div className="space-y-1">
+          {[
+            { href: 'https://github.com/karthikdk2004/ai-pr-reviewer', icon: Github, label: 'Source Code', desc: 'GitHub' },
+            { href: 'https://ai-pr-reviewer-eta.vercel.app', icon: Server, label: 'Live Demo', desc: 'Vercel' },
+          ].map(({ href, icon: LinkIcon, label, desc }) => (
+            <a
+              key={href}
+              href={href} target="_blank" rel="noreferrer"
+              className="flex items-center gap-3 px-3 py-2.5 -mx-1 rounded-lg hover:bg-bg-hover/40 transition-colors group"
+            >
+              <LinkIcon size={14} className="text-text-tertiary group-hover:text-text-secondary transition-colors" />
+              <div className="flex-1">
+                <span className="text-text-primary text-sm group-hover:text-accent transition-colors">{label}</span>
+                <span className="text-text-tertiary text-xs ml-2">{desc}</span>
+              </div>
+              <ExternalLink size={11} className="text-text-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
+            </a>
+          ))}
+        </div>
+      </div>
+    </motion.div>
   )
 }
 
