@@ -83,6 +83,7 @@ export default function ReviewDashboard({ review, onNewReview }) {
     security: sortIssues(review.security_issues || []),
     quality: sortIssues(review.quality_issues || []),
     performance: sortIssues(review.performance_issues || []),
+    positives: (review.positive_aspects || []).map((text, i) => ({ title: text, severity: 'positive', category: 'positive', id: `pos-${i}` })),
   }
   const list = issueMap[tab]
   const total = issueMap.all.length
@@ -93,7 +94,7 @@ export default function ReviewDashboard({ review, onNewReview }) {
     { icon: Shield, label: 'Security', count: review.security_issues?.length ?? 0, key: 'security', accent: 'text-red-400', bg: 'bg-red-500/8' },
     { icon: Code, label: 'Quality', count: review.quality_issues?.length ?? 0, key: 'quality', accent: 'text-blue-400', bg: 'bg-blue-500/8' },
     { icon: Gauge, label: 'Performance', count: review.performance_issues?.length ?? 0, key: 'performance', accent: 'text-orange-400', bg: 'bg-orange-500/8' },
-    { icon: CheckCircle, label: 'Positives', count: review.positive_aspects?.length ?? 0, key: 'all', accent: 'text-emerald-400', bg: 'bg-emerald-500/8' },
+    { icon: CheckCircle, label: 'Positives', count: review.positive_aspects?.length ?? 0, key: 'positives', accent: 'text-emerald-400', bg: 'bg-emerald-500/8' },
   ]
 
   return (
@@ -184,7 +185,7 @@ export default function ReviewDashboard({ review, onNewReview }) {
       {/* Tab bar + Issues */}
       <div>
         <div className="flex gap-0 border-b border-border-default mb-4">
-          {['all', 'security', 'quality', 'performance'].map((t) => (
+          {['all', 'security', 'quality', 'performance', 'positives'].map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -192,7 +193,7 @@ export default function ReviewDashboard({ review, onNewReview }) {
                 tab === t ? 'text-text-primary' : 'text-text-tertiary hover:text-text-secondary'
               }`}
             >
-              {t === 'all' ? `All (${total})` : t}
+              {t === 'all' ? `All (${total})` : t.charAt(0).toUpperCase() + t.slice(1)}
               {tab === t && (
                 <motion.div
                   className="absolute bottom-0 left-2 right-2 h-[2px] bg-accent rounded-full"
@@ -212,7 +213,22 @@ export default function ReviewDashboard({ review, onNewReview }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {list.length === 0 ? (
+            {tab === 'positives' ? (
+              <div className="space-y-2">
+                {list.map((item, i) => (
+                  <motion.div
+                    key={i}
+                    className="card px-4 py-3.5 flex items-start gap-3 border-l-2 border-l-emerald-500/60"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04, duration: 0.25 }}
+                  >
+                    <CheckCircle size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+                    <span className="text-text-secondary text-[13px] leading-relaxed">{item.title}</span>
+                  </motion.div>
+                ))}
+              </div>
+            ) : list.length === 0 ? (
               <div className="py-16 text-center">
                 <CheckCircle size={28} className="mx-auto mb-2 text-emerald-400/30" />
                 <p className="text-text-secondary text-sm">No issues found</p>

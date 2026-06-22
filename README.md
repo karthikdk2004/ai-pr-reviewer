@@ -200,6 +200,14 @@ pr-reviewer/
 
 ---
 
+## ⚠️ Known Limitations
+
+- **Ephemeral Storage** — Review history is stored in a JSON file on the backend. On Render's free tier, data resets on container restart. For persistent storage, integrate a database like Supabase or MongoDB.
+- **Rate Limits** — Without a GitHub token, the GitHub API allows only 60 requests/hour. Set `GITHUB_TOKEN` for 5000 req/hr.
+- **Diff Size** — Large PRs (100+ files) are truncated to the first 20 files and 40KB of diff content to stay within LLM context limits.
+
+---
+
 ## 👨‍💻 Author
 
 **Karthik DK** — [@karthikdk2004](https://github.com/karthikdk2004)

@@ -8,7 +8,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import re
+from pydantic import BaseModel, field_validator
 
 load_dotenv()
 
@@ -16,9 +17,15 @@ from app.agent.graph import build_graph  # noqa: E402
 
 app = FastAPI(title="PR Reviewer API", version="1.0.0")
 
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://ai-pr-reviewer-eta.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,6 +50,16 @@ def _save(reviews: list) -> None:
 
 class ReviewRequest(BaseModel):
     pr_url: str
+
+    @field_validator("pr_url")
+    @classmethod
+    def validate_pr_url(cls, v):
+        v = v.strip()
+        if not re.match(r"https?://github\.com/[^/]+/[^/]+/pull/\d+", v):
+            raise ValueError(
+                "Invalid GitHub PR URL. Expected format: https://github.com/owner/repo/pull/123"
+            )
+        return v
 
 
 # ── Routes ───────────────────────────────────────────────────────────────────

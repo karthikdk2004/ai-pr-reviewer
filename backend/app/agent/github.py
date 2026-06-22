@@ -32,7 +32,7 @@ class GitHubClient:
         )
 
     async def _get(self, url: str) -> Any:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(url, headers=self.headers, timeout=30.0)
             if response.status_code == 403:
                 raise Exception(

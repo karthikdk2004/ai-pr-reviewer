@@ -1,5 +1,6 @@
-import { GitBranch, Plus, History, Settings, Layers } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { GitBranch, Plus, History, Settings, Layers, Menu, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const NAV = [
   { id: 'input', label: 'New Review', icon: Plus },
@@ -8,14 +9,33 @@ const NAV = [
 ]
 
 export default function Sidebar({ currentView, onNavigate, reviewCount = 0 }) {
-  return (
-    <aside className="w-56 shrink-0 bg-bg-surface border-r border-border-default flex flex-col h-screen">
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const handleNav = (v) => {
+    onNavigate(v)
+    setMobileOpen(false)
+  }
+
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth >= 768) setMobileOpen(false) }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div className="h-12 border-b border-border-default flex items-center px-4 gap-2.5">
         <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
           <GitBranch size={14} className="text-white" />
         </div>
         <span className="font-semibold text-text-primary text-sm tracking-tight">PR Reviewer</span>
+        <button
+          className="ml-auto md:hidden text-text-tertiary hover:text-text-primary transition-colors"
+          onClick={() => setMobileOpen(false)}
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -25,7 +45,7 @@ export default function Sidebar({ currentView, onNavigate, reviewCount = 0 }) {
           return (
             <button
               key={id}
-              onClick={() => onNavigate(id)}
+              onClick={() => handleNav(id)}
               className={`
                 w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 relative
                 ${active
@@ -70,6 +90,48 @@ export default function Sidebar({ currentView, onNavigate, reviewCount = 0 }) {
           </a>
         </p>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        className="fixed top-3 left-3 z-50 md:hidden w-9 h-9 rounded-lg bg-bg-surface border border-border-default flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+        onClick={() => setMobileOpen(true)}
+        style={{ display: mobileOpen ? 'none' : undefined }}
+      >
+        <Menu size={18} />
+      </button>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-56 shrink-0 bg-bg-surface border-r border-border-default flex-col h-screen">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/60 z-40 md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.aside
+              className="fixed left-0 top-0 bottom-0 w-64 bg-bg-surface border-r border-border-default flex flex-col z-50 md:hidden"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              {sidebarContent}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

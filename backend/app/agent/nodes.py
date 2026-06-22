@@ -23,16 +23,22 @@ class ReviewState(TypedDict):
     current_node: str
 
 
+_llm_instance: Optional[ChatGroq] = None
+
 def _get_llm() -> Optional[ChatGroq]:
+    global _llm_instance
+    if _llm_instance is not None:
+        return _llm_instance
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         return None
-    return ChatGroq(
+    _llm_instance = ChatGroq(
         model="llama-3.3-70b-versatile",
         groq_api_key=api_key,
         temperature=0.1,
         max_tokens=4096,
     )
+    return _llm_instance
 
 
 def _extract_json(text: str) -> Dict:

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Sidebar from './components/Sidebar'
 import Navbar from './components/Navbar'
@@ -274,6 +274,36 @@ function SettingsPage() {
   )
 }
 
+// ── Error Boundary ────────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-screen bg-bg-base">
+          <div className="card p-8 max-w-md text-center">
+            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+              <Shield size={20} className="text-red-400" />
+            </div>
+            <h2 className="text-text-primary text-lg font-semibold mb-2">Something went wrong</h2>
+            <p className="text-text-tertiary text-sm mb-4">{this.state.error?.message || 'An unexpected error occurred.'}</p>
+            <button onClick={() => window.location.reload()} className="btn-primary text-sm">
+              Reload App
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 // ── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState('input')
@@ -281,6 +311,7 @@ export default function App() {
   const [reviewHistory, setReviewHistory] = useState([MOCK_REVIEW, MOCK_REVIEW_2])
   const [isLoading, setIsLoading] = useState(false)
   const [loadingNode, setLoadingNode] = useState(0)
+  const [error, setError] = useState(null)
   const nodeTimer = useRef(null)
 
   useEffect(() => {
@@ -312,9 +343,9 @@ export default function App() {
       setReviewHistory(prev => [review, ...prev.filter(r => r.id !== review.id).slice(0, 49)])
       setView('review')
     } catch (err) {
-      console.warn('API error, using demo data:', err.message)
-      setCurrentReview({ ...MOCK_REVIEW, id: `demo-${Date.now()}`, pr_url: prUrl, created_at: new Date().toISOString() })
-      setView('review')
+      console.warn('API error:', err.message)
+      setError(err.message || 'Failed to analyze PR. Please check the URL and try again.')
+      setTimeout(() => setError(null), 6000)
     } finally {
       clearInterval(nodeTimer.current)
       setIsLoading(false)
@@ -323,7 +354,8 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-bg-base text-text-primary overflow-hidden">
+    <ErrorBoundary>
+    <div className="flex h-screen bg-bg-base text-text-primary overflow-hidden relative">
       <Sidebar
         currentView={view}
         onNavigate={(v) => { setView(v); if (v === 'input') setCurrentReview(null) }}
@@ -331,7 +363,31 @@ export default function App() {
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-6 pt-16 md:pt-6">
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                className="fixed top-4 right-4 z-50 max-w-sm"
+                initial={{ opacity: 0, y: -20, x: 20 }}
+                animate={{ opacity: 1, y: 0, x: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="card border-red-500/30 bg-bg-surface/95 backdrop-blur-sm p-4 shadow-lg shadow-red-500/5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-md bg-red-500/10 flex items-center justify-center shrink-0">
+                      <Shield size={12} className="text-red-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-text-primary text-sm font-medium mb-0.5">Analysis Failed</p>
+                      <p className="text-text-tertiary text-xs leading-relaxed">{error}</p>
+                    </div>
+                    <button onClick={() => setError(null)} className="text-text-tertiary hover:text-text-primary transition-colors text-xs shrink-0 mt-0.5">✕</button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {view === 'input' && <PRInput onAnalyze={analyzePR} isLoading={isLoading} loadingNode={loadingNode} />}
           {view === 'review' && currentReview && <ReviewDashboard review={currentReview} onNewReview={() => setView('input')} />}
           {view === 'review' && !currentReview && <PRInput onAnalyze={analyzePR} isLoading={isLoading} loadingNode={loadingNode} />}
@@ -340,5 +396,6 @@ export default function App() {
         </main>
       </div>
     </div>
+    </ErrorBoundary>
   )
 }
