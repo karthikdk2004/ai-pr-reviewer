@@ -337,7 +337,14 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pr_url: prUrl }),
       })
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `HTTP ${res.status}`)
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        const detail = body.detail
+        const msg = typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail) ? detail.map(d => d.msg || d.message || JSON.stringify(d)).join('; ') : `HTTP ${res.status}`
+        throw new Error(msg)
+      }
       const review = await res.json()
       setCurrentReview(review)
       setReviewHistory(prev => [review, ...prev.filter(r => r.id !== review.id).slice(0, 49)])
