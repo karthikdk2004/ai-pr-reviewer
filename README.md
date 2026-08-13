@@ -13,17 +13,9 @@
 
 ---
 
-## ✨ Demo
+## 🚀 Try It Live
 
-<div align="center">
-
-https://github.com/user-attachments/assets/demo.webp
-
-![PR Reviewer Demo](demo.webp)
-
-*Paste any public GitHub PR URL → Watch the AI pipeline analyze it in real-time → Get a comprehensive review*
-
-</div>
+[**ai-pr-reviewer-eta.vercel.app**](https://ai-pr-reviewer-eta.vercel.app/) — paste any public GitHub PR URL and watch the AI pipeline analyze it in real-time.
 
 ---
 
@@ -237,7 +229,7 @@ pr-reviewer/
 
 ## 👨‍💻 Author
 
-****D** Karthik Reddy** — [@karthikdk2004](https://github.com/karthikdk2004)
+**Karthik DK** — [@karthikdk2004](https://github.com/karthikdk2004)
 
 ---
 
