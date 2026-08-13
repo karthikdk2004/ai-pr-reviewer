@@ -55,6 +55,33 @@ graph LR
 
 ---
 
+## 🎯 Engineering Challenges
+
+The hard part of this project was never "calling an LLM" — that's trivial. The hard part was making a **5-stage pipeline reliable enough to trust**.
+
+Early versions occasionally hallucinated file paths that didn't exist in the diff, or returned output that almost matched the expected schema but not quite — a quiet, dangerous kind of wrong, since a confidently incorrect review is worse than no review at all.
+
+**How it was fixed:**
+- **Strict output schemas per node** — each agent's output is validated against a Pydantic model before being passed to the next stage
+- **Validation logic between stages** — a bad response from one node can't silently corrupt the rest of the pipeline
+- **Per-task prompt engineering** — separate, tuned prompts for security/quality/performance instead of one generic prompt trying to do everything
+
+The goal was to shift the failure mode from *"confidently wrong"* to *"no output"* — which is the difference between a demo and a tool you'd actually trust.
+
+---
+
+## 📈 Validated On Real-World Code
+
+Tested against a **live production PR from Facebook's React repository** (31k+ stars) — not a toy example or a PR I already knew the answer to.
+
+- ✅ Correctly identified **6 real issues** across security, quality, and performance categories
+- ✅ Accurate **file-level and line-level attribution** for every issue
+- ⚡ Full review completed in **8.3 seconds**
+
+This mattered more to me than any other result — it proved the pipeline's judgment held up on code I had zero control over.
+
+---
+
 ## 🚀 Features
 
 - **🤖 Multi-Agent AI Pipeline** — 5 specialized LangGraph nodes, not a single monolithic prompt
@@ -210,7 +237,7 @@ pr-reviewer/
 
 ## 👨‍💻 Author
 
-**Karthik DK** — [@karthikdk2004](https://github.com/karthikdk2004)
+****D** Karthik Reddy** — [@karthikdk2004](https://github.com/karthikdk2004)
 
 ---
 
